@@ -76,6 +76,3 @@ class Updater:
             self.driver.write_info(info, year)
             self.driver.write_details(cve_entries)
             print('Entries for year {} updated successfully'.format(year))
-
-
-Updater().update()

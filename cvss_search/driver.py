@@ -33,16 +33,24 @@ class MongoDriver:
             copy['_id'] = el_id
             collection.replace_one({"_id": el_id}, copy, True)
 
-    def get(self, filter):
+    def get(self, *argv):
         self._check_connnection()
         collection = self.connection['cvss_details']
-        return collection.find(filter)
+        print(argv)
+        return collection.find(*argv)
+
+    def get_collection(self):
+        self._check_connnection()
+        return self.connection['cvss_details']
 
     def _check_connnection(self):
-        if self.client is None or self.connection is None:
+        if not self.is_connected():
             raise Exception('Driver for MongoDB is not connected')
 
-    def _close_connection(self):
+    def close_connection(self):
         self.client.close()
         self.client = None
         self.connection = None
+
+    def is_connected(self):
+        return self.client is not None and self.connection is not None
