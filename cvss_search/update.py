@@ -1,0 +1,81 @@
+import datetime
+import gzip
+import json
+import os
+import hashlib
+import shutil
+from pathlib import Path
+
+import requests
+from os.path import isfile, join
+
+from cvss_search.driver import MongoDriver
+
+
+class Updater:
+    def __init__(self, server=None, port=None):
+        self.path = join(os.path.dirname(join(os.path.abspath(__file__))), 'data')
+        self.last_year = datetime.datetime.now().year
+        self.url = 'https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-{0}.{1}'
+        self.starting_year = 2002
+        self.force_update = True
+        self.driver = MongoDriver(server=server, port=port)
+        self.driver.connect()
+        Path(self.path).mkdir(parents=True, exist_ok=True)
+
+    def update(self):
+        from os import listdir
+        onlyfiles = [f for f in listdir(self.path) if isfile(join(self.path, f)) and not f.endswith('.py')]
+        year = self.starting_year
+        while year <= self.last_year:
+            meta_url = self.url.format(year, 'meta')
+            meta_file = join(self.path, meta_url.rsplit('/', 1)[-1])
+            meta_content = requests.get(meta_url).content
+            meta_hash = hashlib.sha256(meta_content).hexdigest()
+            ignore = False
+            if meta_file.rsplit('/', 1)[-1] in onlyfiles:
+                with open(meta_file, "rb") as f:
+                    ignore = hashlib.sha256(f.read()).hexdigest() == meta_hash
+            if ignore and not self.force_update:
+                year += 1
+                print("Entries for year {} already updated. Skipping...".format(year))
+                continue
+            json_file_url = self.url.format(year, 'json.gz')
+            json_gz_file = join(self.path, json_file_url.rsplit('/', 1)[-1])
+            json_file = join(self.path, self.url.format(year, 'json').rsplit('/', 1)[-1])
+            with open(json_gz_file, 'wb') as f:
+                r = requests.get(json_file_url)
+                f.write(r.content)
+            with gzip.open(json_gz_file, 'rb') as f_in:
+                with open(json_file, 'wb') as f_out:
+                    shutil.copyfileobj(f_in, f_out)
+                    success = True
+            if not success:
+                print("Download failed for year {}, skipping...".format(year))
+                year += 1
+                continue
+            self._update_db(json_file, year)
+            with open(meta_file, 'wb') as f:
+                f.write(meta_content)
+            year += 1
+
+        self._cleanup_json()
+
+    def _cleanup_json(self):
+        to_delete = [f for f in os.listdir(self.path) if
+                     isfile(join(self.path, f)) and (f.endswith('.json.gz') or f.endswith('.json'))]
+        for file in to_delete:
+            os.remove(join(self.path, file))
+
+    def _update_db(self, json_file, year):
+        with open(json_file) as f:
+            data = json.load(f)
+            cve_entries = data['CVE_Items']
+            info = dict(data)
+            del info['CVE_Items']
+            self.driver.write_info(info, year)
+            self.driver.write_details(cve_entries)
+            print('Entries for year {} updated successfully'.format(year))
+
+
+Updater().update()
