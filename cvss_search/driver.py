@@ -39,5 +39,10 @@ class MongoDriver:
         return collection.find(filter)
 
     def _check_connnection(self):
-        if self.connection is None:
+        if self.client is None or self.connection is None:
             raise Exception('Driver for MongoDB is not connected')
+
+    def _close_connection(self):
+        self.client.close()
+        self.client = None
+        self.connection = None
