@@ -27,18 +27,18 @@ class CVEUpdater:
         Path(self.path).mkdir(parents=True, exist_ok=True)
 
     def update(self):
-        from os import listdir
-        onlyfiles = [f for f in listdir(self.path) if isfile(join(self.path, f)) and not f.endswith('.py')]
         year = self.starting_year
+        modified = False
         while year <= self.last_year:
             meta_url = self.url.format(year, 'meta')
             meta_file = join(self.path, meta_url.rsplit('/', 1)[-1])
             meta_content = requests.get(meta_url).content
             meta_hash = hashlib.sha256(meta_content).hexdigest()
-            ignore = False
-            if meta_file.rsplit('/', 1)[-1] in onlyfiles:
-                with open(meta_file, "rb") as f:
-                    ignore = hashlib.sha256(f.read()).hexdigest() == meta_hash
+            try:
+                ignore = meta_hash == self.driver.get_info_cve(year)['meta_hash']
+            except:
+                print("Can't find hash of previous update for year {}. Updating...".format(year))
+                ignore = False
             if ignore and not self.force_update:
                 year += 1
                 print("Entries for year {} already updated. Skipping...".format(year))
@@ -57,25 +57,29 @@ class CVEUpdater:
                 print("Download failed for year {}, skipping...".format(year))
                 year += 1
                 continue
-            self._update_db(json_file, year)
+            modified = True
+            self._update_db(json_file, year, meta_hash)
             with open(meta_file, 'wb') as f:
                 f.write(meta_content)
             year += 1
+        self._cleanup_files()
+        return modified
 
-        self._cleanup_json()
-
-    def _cleanup_json(self):
+    def _cleanup_files(self):
         to_delete = [f for f in os.listdir(self.path) if
-                     isfile(join(self.path, f)) and (f.endswith('.json.gz') or f.endswith('.json'))]
+                     isfile(join(self.path, f)) and f.startswith('nvdcve') and (
+                                 f.endswith('.json.gz') or f.endswith('.json') or f.endswith('.meta'))]
+        print(to_delete)
         for file in to_delete:
             os.remove(join(self.path, file))
 
-    def _update_db(self, json_file, year):
+    def _update_db(self, json_file, year, meta_hash):
         with open(json_file) as f:
             data = json.load(f)
             cve_entries = data['CVE_Items']
             info = dict(data)
             del info['CVE_Items']
-            self.driver.write_info_cve(info, year)
-            self.driver.write_details_cve(cve_entries)
+            self.driver.write_info_cve(info, year, meta_hash)
+            for entry in cve_entries:
+                self.driver.write_details_cve(entry)
             print('Entries for year {} updated successfully'.format(year))

@@ -28,10 +28,12 @@ class CAPECUpdater:
         if os.path.splitext(self.url.rsplit('/', 1)[-1])[0] == self.driver.get_info_capec()[
             'version'] and not self.force_update:
             print("CAPEC already updated")
-            return
+            return False
         with open(xml_file, 'wb') as f:
             f.write(xml_content)
         self._update_db(xml_file)
+        self._cleanup_files()
+        return True
 
     def _update_db(self, json_file):
         with open(json_file) as f:
@@ -77,5 +79,5 @@ class CAPECUpdater:
                 i += 1
             self.driver.write_info_capec({'version': os.path.splitext(self.url.rsplit('/', 1)[-1])[0]})
 
-
-CAPECUpdater(force_update=True).update()
+    def _cleanup_files(self):
+        os.remove(join(self.path, self.url.rsplit('/', 1)[-1]))
