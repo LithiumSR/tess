@@ -15,31 +15,52 @@ class MongoDriver:
 
     def connect(self):
         self.client = MongoClient(self.server, self.port)
-        self.connection = self.client['cvss-database']
+        self.connection = self.client['cve-search-database']
 
-    def write_info(self, info, year):
+    def write_info_cve(self, info, year):
         self._check_connnection()
-        collection = self.connection['info']
+        collection = self.connection['info-cve']
         info['_id'] = year
         collection.replace_one({"_id": year}, info, True)
 
-    def write_details(self, details):
+    def write_info_capec(self, info):
         self._check_connnection()
-        collection = self.connection['cvss_details']
+        collection = self.connection['info-capec']
+        collection.replace_one({"_id": 0}, info, True)
+
+    def get_info_capec(self):
+        self._check_connnection()
+        collection = self.connection['info-capec']
+        return collection.find_one({"_id": 0})
+
+    def get_info_cve(self, year):
+        self._check_connnection()
+        collection = self.connection['info-cve']
+        return collection.find_one({"_id": year})
+
+    def write_details_cve(self, details):
+        self._check_connnection()
+        collection = self.connection['cve_details']
         for el in details:
             copy = dict(el)
             el_id = el['cve']['CVE_data_meta']['ID']
             copy['_id'] = el_id
             collection.replace_one({"_id": el_id}, copy, True)
 
-    def get(self, *argv):
+    def write_entry_capec(self, entry):
         self._check_connnection()
-        collection = self.connection['cvss_details']
+        collection = self.connection['capec_details']
+        entry['_id'] = entry['id']
+        collection.replace_one({"_id": entry['_id']}, entry, True)
+
+    def get_cve(self, *argv):
+        self._check_connnection()
+        collection = self.connection['cve_details']
         return collection.find(*argv)
 
     def get_collection(self):
         self._check_connnection()
-        return self.connection['cvss_details']
+        return self.connection['cve_details']
 
     def _check_connnection(self):
         if not self.is_connected():

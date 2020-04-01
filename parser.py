@@ -29,7 +29,7 @@ class HistoryParser:
         with open(self.path, mode='r') as csv_file:
             csv_reader = csv.DictReader(csv_file, delimiter=',')
             for row in csv_reader:
-                info = cve.find_by_cve(row['id'])
+                info = cve.find_cve_by_id(row['id'])
                 vuln_event = VulnerabilityEvent(row['id'], row['data'], row['outcome'])
                 vuln_event.published = dateparser.parse(info['publishedDate'])
                 keywords = rake.run(info['cve']['description']['description_data'][0]['value'])

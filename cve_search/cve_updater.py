@@ -1,13 +1,13 @@
 import datetime
 import gzip
+import hashlib
 import json
 import os
-import hashlib
 import shutil
+from os.path import isfile, join
 from pathlib import Path
 
 import requests
-from os.path import isfile, join
 
 from cve_search.driver import MongoDriver
 
@@ -76,6 +76,6 @@ class CVEUpdater:
             cve_entries = data['CVE_Items']
             info = dict(data)
             del info['CVE_Items']
-            self.driver.write_info(info, year)
-            self.driver.write_details(cve_entries)
+            self.driver.write_info_cve(info, year)
+            self.driver.write_details_cve(cve_entries)
             print('Entries for year {} updated successfully'.format(year))
