@@ -9,18 +9,21 @@ from pathlib import Path
 import requests
 from os.path import isfile, join
 
-from cvss_search.driver import MongoDriver
+from cve_search.driver import MongoDriver
 
 
 class Updater:
-    def __init__(self, server=None, port=None):
+    def __init__(self, server=None, port=None, driver=None, force_update=False):
         self.path = join(os.path.dirname(join(os.path.abspath(__file__))), 'data')
         self.last_year = datetime.datetime.now().year
         self.url = 'https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-{0}.{1}'
         self.starting_year = 2002
-        self.force_update = True
-        self.driver = MongoDriver(server=server, port=port)
-        self.driver.connect()
+        self.force_update = force_update
+        self.driver = driver
+        if self.driver is None:
+            self.driver = MongoDriver(server=server, port=port)
+        if not self.driver.is_connected():
+            self.driver.connect()
         Path(self.path).mkdir(parents=True, exist_ok=True)
 
     def update(self):

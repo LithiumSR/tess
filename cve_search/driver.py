@@ -15,7 +15,6 @@ class MongoDriver:
 
     def connect(self):
         self.client = MongoClient(self.server, self.port)
-        print(self.client)
         self.connection = self.client['cvss-database']
 
     def write_info(self, info, year):
@@ -36,7 +35,6 @@ class MongoDriver:
     def get(self, *argv):
         self._check_connnection()
         collection = self.connection['cvss_details']
-        print(argv)
         return collection.find(*argv)
 
     def get_collection(self):
