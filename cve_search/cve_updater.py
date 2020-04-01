@@ -12,7 +12,7 @@ from os.path import isfile, join
 from cve_search.driver import MongoDriver
 
 
-class Updater:
+class CVEUpdater:
     def __init__(self, server=None, port=None, driver=None, force_update=False):
         self.path = join(os.path.dirname(join(os.path.abspath(__file__))), 'data')
         self.last_year = datetime.datetime.now().year

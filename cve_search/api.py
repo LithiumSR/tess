@@ -1,5 +1,5 @@
+from cve_search.cve_updater import CVEUpdater
 from cve_search.driver import MongoDriver
-from cve_search.update import Updater
 
 
 class CVESearch:
@@ -7,7 +7,7 @@ class CVESearch:
         self.driver = MongoDriver(server, port)
 
     def update(self):
-        Updater(driver=self.driver).update()
+        CVEUpdater(driver=self.driver).update()
 
     def query(self, *argv):
         self._connect()
