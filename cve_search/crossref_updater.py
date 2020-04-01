@@ -4,6 +4,7 @@ from os.path import join
 from cve_search.driver import MongoDriver
 from tqdm import tqdm
 
+
 class CrossReferenceUpdater:
     def __init__(self, server=None, port=None, driver=None):
         self.path = join(os.path.dirname(join(os.path.abspath(__file__))), 'data')
@@ -14,15 +15,17 @@ class CrossReferenceUpdater:
         if not self.driver.is_connected():
             self.driver.connect()
 
-    def update_capec(self, force_update = False, skip_existing = True):
+    def update_capec(self, force_update=False, capec_updated=True, cve_updated=True):
         print('Updating CAPEC cross references')
         cursor_cve = self.driver.get_cve({})
-        count = self.driver.get_collection('cve_details').count_documents({})
-        with tqdm(total=count) as pbar:
+        cursor_capec = self.driver.get_capec({})
+        count_cve = self.driver.get_collection('cve_details').count_documents({})
+        count_capec = self.driver.get_collection('capec_details').count_documents({})
+        with tqdm(desc='Stage 1', total=count_cve) as pbar:
             for item in cursor_cve:
                 cwe = []
                 problems = item['cve']['problemtype']['problemtype_data']
-                if 'capec' in item.keys() and skip_existing and not force_update:
+                if 'capec' in item.keys() and not capec_updated and not force_update:
                     pbar.update(1)
                     continue
                 for problem in problems:
@@ -33,8 +36,8 @@ class CrossReferenceUpdater:
                 cwe = list(set(cwe))
                 capec_ids = []
                 for weakness in cwe:
-                    cursor_capec = self.driver.get_capec({ 'weaknesses':  weakness })
-                    capec_ids.extend([item['id'] for item in cursor_capec])
+                    capec_by_weakness = self.driver.get_capec({'weaknesses': weakness})
+                    capec_ids.extend([item['id'] for item in capec_by_weakness])
                 capec_ids = list(set(capec_ids))
                 to_add = []
                 for entry in capec_ids:
@@ -43,4 +46,13 @@ class CrossReferenceUpdater:
                 item['capec'] = to_add
                 self.driver.write_details_cve(item)
                 pbar.update(1)
-
+        with tqdm(desc='Stage 2', total=count_capec) as pbar:
+            for item in cursor_capec:
+                if 'cve' in item.keys() and not cve_updated and not force_update:
+                    pbar.update(1)
+                    continue
+                cve_by_capec = self.driver.get_cve({'capec.id': item['id']})
+                ids = list(set([el['_id'] for el in cve_by_capec]))
+                item['cve'] = ids
+                self.driver.write_entry_capec(item)
+                pbar.update(1)

@@ -10,9 +10,9 @@ class CVESearch:
 
     def update(self, force_update=False):
         capec_updated = CAPECUpdater(driver=self.driver, force_update=force_update).update()
-        CVEUpdater(driver=self.driver, force_update=force_update).update()
+        cve_updated = CVEUpdater(driver=self.driver, force_update=force_update).update()
         cross_updater = CrossReferenceUpdater(driver=self.driver)
-        cross_updater.update_capec(force_update, not capec_updated)
+        cross_updater.update_capec(force_update, capec_updated, cve_updated)
 
     def query_cve(self, *argv):
         self._connect()
@@ -40,3 +40,4 @@ class CVESearch:
 
     def close(self):
         self.driver.close_connection()
+c = CVESearch().update()

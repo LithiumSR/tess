@@ -25,8 +25,7 @@ class CAPECUpdater:
     def update(self):
         xml_file = join(self.path, self.url.rsplit('/', 1)[-1])
         xml_content = requests.get(self.url).content
-        if os.path.splitext(self.url.rsplit('/', 1)[-1])[0] == self.driver.get_info_capec()[
-            'version'] and not self.force_update:
+        if os.path.splitext(self.url.rsplit('/', 1)[-1])[0] == self.driver.get_info_capec()['version'] and not self.force_update:
             print("CAPEC already updated")
             return False
         with open(xml_file, 'wb') as f:
