@@ -51,7 +51,10 @@ class CAPECUpdater:
                 name = data[i]['@Name']
                 description = data[i]['Description']
                 if 'Prerequisites' in data[i].keys():
-                    prerequisites = [item for item in data[i]['Prerequisites']['Prerequisite']]
+                    prerequisites = data[i]['Prerequisites']['Prerequisite']
+                    if not isinstance(prerequisites, list):
+                        prerequisites = [prerequisites]
+                    prerequisites = [item for item in prerequisites]
                 if 'Mitigations' in data[i].keys():
                     mitigations = data[i]['Mitigations']['Mitigation']
                     if isinstance(mitigations, dict):
