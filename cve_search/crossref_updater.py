@@ -56,3 +56,6 @@ class CrossReferenceUpdater:
                 item['cve'] = ids
                 self.driver.write_entry_capec(item)
                 pbar.update(1)
+
+    def update_via4(self, cve_updated=True):
+        return None

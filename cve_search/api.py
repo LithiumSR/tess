@@ -13,6 +13,7 @@ class CVESearch:
         cve_updated = CVEUpdater(driver=self.driver, force_update=force_update).update()
         cross_updater = CrossReferenceUpdater(driver=self.driver)
         cross_updater.update_capec(force_update, capec_updated, cve_updated)
+        cross_updater.update_via4(force_update, cve_updated)
 
     def query_cve(self, *argv):
         self._connect()
@@ -20,6 +21,12 @@ class CVESearch:
 
     def find_cve_by_id(self, cve_id):
         return list(self.query_cve({"_id": cve_id}))[0]
+
+    def find_cve_by_capec(self, capec_id, extended_query=False):
+        cve_list = list(self.query_capec({"_id": capec_id}))[0]['cve']
+        if not extended_query:
+            return cve_list
+        return self.query_cve({"$or": [{'_id': item} for item in cve_list]})
 
     def get_all_cve(self):
         return self.query_cve({}, {})
@@ -40,4 +47,3 @@ class CVESearch:
 
     def close(self):
         self.driver.close_connection()
-c = CVESearch().update()
