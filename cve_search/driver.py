@@ -17,16 +17,23 @@ class MongoDriver:
         self.client = MongoClient(self.server, self.port)
         self.connection = self.client['cve-search-database']
 
-    def write_info_cve(self, info, year, meta_hash):
+    def write_info_cve(self, info, year, hash):
         self._check_connnection()
         collection = self.connection['info-cve']
         info['_id'] = year
-        info['meta_hash'] = meta_hash
+        info['hash'] = hash
         collection.replace_one({"_id": year}, info, True)
 
-    def write_info_capec(self, info):
+    def write_info_capec(self, hash):
         self._check_connnection()
         collection = self.connection['info-capec']
+        info = {'_id': 0, 'hash': hash}
+        collection.replace_one({"_id": 0}, info, True)
+
+    def write_info_via4(self, hash):
+        self._check_connnection()
+        collection = self.connection['info-via4']
+        info = {'_id': 0, 'hash': hash}
         collection.replace_one({"_id": 0}, info, True)
 
     def get_info_capec(self):
@@ -34,11 +41,15 @@ class MongoDriver:
         collection = self.connection['info-capec']
         return collection.find_one({"_id": 0})
 
+    def get_info_via4(self):
+        self._check_connnection()
+        collection = self.connection['info-via4']
+        return collection.find_one({"_id": 0})
+
     def get_info_cve(self, year):
         self._check_connnection()
         collection = self.connection['info-cve']
         return collection.find_one({"_id": year})
-
 
     def write_details_cve(self, entry):
         self._check_connnection()
