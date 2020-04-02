@@ -1,14 +1,15 @@
 import os
 from os.path import join
 
-from cve_search.driver import MongoDriver
 from tqdm import tqdm
+
+from cve_search.driver import MongoDriver
+from cve_search.via4_ref_updater import VIA4RefUpdater
 
 
 class CrossReferenceUpdater:
     def __init__(self, server=None, port=None, driver=None):
         self.path = join(os.path.dirname(join(os.path.abspath(__file__))), 'data')
-        self.url = 'https://capec.mitre.org/data/xml/capec_v3.2.xml'
         self.driver = driver
         if self.driver is None:
             self.driver = MongoDriver(server=server, port=port)
@@ -16,7 +17,7 @@ class CrossReferenceUpdater:
             self.driver.connect()
 
     def update_capec(self, force_update=False, capec_updated=True, cve_updated=True):
-        print('Updating CAPEC cross references')
+        print('Starting crossreference updater for CAPEC entries...')
         cursor_cve = self.driver.get_cve({})
         cursor_capec = self.driver.get_capec({})
         count_cve = self.driver.get_collection('cve_details').count_documents({})
@@ -57,5 +58,5 @@ class CrossReferenceUpdater:
                 self.driver.write_entry_capec(item)
                 pbar.update(1)
 
-    def update_via4(self, cve_updated=True):
-        return None
+    def update_via4(self, force_update=True, cve_updated=True):
+        VIA4RefUpdater(driver=self.driver, force_update=force_update, cve_updated=cve_updated).update()
