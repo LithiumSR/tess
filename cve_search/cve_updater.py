@@ -27,6 +27,7 @@ class CVEUpdater:
         Path(self.path).mkdir(parents=True, exist_ok=True)
 
     def update(self):
+        print("Starting CVE updater...")
         year = self.starting_year
         modified = False
         while year <= self.last_year:
@@ -35,13 +36,13 @@ class CVEUpdater:
             meta_content = requests.get(meta_url).content
             meta_hash = hashlib.sha256(meta_content).hexdigest()
             try:
-                ignore = meta_hash == self.driver.get_info_cve(year)['meta_hash']
+                ignore = meta_hash == self.driver.get_info_cve(year)['hash']
             except:
-                print("Can't find hash of previous update for year {}. Updating...".format(year))
+                print("Can't find hash of previous update for year {}. Updating nonetheless...".format(year))
                 ignore = False
             if ignore and not self.force_update:
                 year += 1
-                print("Entries for year {} already updated. Skipping...".format(year))
+                print("CVE Entries for year {} already updated. Skipping...".format(year))
                 continue
             json_file_url = self.url.format(year, 'json.gz')
             json_gz_file = join(self.path, json_file_url.rsplit('/', 1)[-1])
@@ -68,8 +69,7 @@ class CVEUpdater:
     def _cleanup_files(self):
         to_delete = [f for f in os.listdir(self.path) if
                      isfile(join(self.path, f)) and f.startswith('nvdcve') and (
-                                 f.endswith('.json.gz') or f.endswith('.json') or f.endswith('.meta'))]
-        print(to_delete)
+                             f.endswith('.json.gz') or f.endswith('.json') or f.endswith('.meta'))]
         for file in to_delete:
             os.remove(join(self.path, file))
 
@@ -82,4 +82,4 @@ class CVEUpdater:
             self.driver.write_info_cve(info, year, meta_hash)
             for entry in cve_entries:
                 self.driver.write_details_cve(entry)
-            print('Entries for year {} updated successfully'.format(year))
+            print('CVE Entries for year {} updated successfully'.format(year))
