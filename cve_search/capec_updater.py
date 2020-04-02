@@ -1,4 +1,5 @@
 import datetime
+import hashlib
 import os
 from os.path import join
 from pathlib import Path
@@ -23,19 +24,24 @@ class CAPECUpdater:
         Path(self.path).mkdir(parents=True, exist_ok=True)
 
     def update(self):
+        print("Starting CAPEC updater...")
         xml_file = join(self.path, self.url.rsplit('/', 1)[-1])
         xml_content = requests.get(self.url).content
-        if os.path.splitext(self.url.rsplit('/', 1)[-1])[0] == self.driver.get_info_capec()['version'] and not self.force_update:
-            print("CAPEC already updated")
-            return False
+        xml_hash = hashlib.sha256(xml_content).hexdigest()
+        try:
+            if xml_hash == self.driver.get_info_capec()['hash'] and not self.force_update:
+                print("CAPEC already updated. Aborting...")
+                return False
+        except:
+            print("Can't find hash of previous CAPEC update. Updating nonetheless...")
         with open(xml_file, 'wb') as f:
             f.write(xml_content)
-        self._update_db(xml_file)
+        self._update_db(xml_file, xml_hash)
         self._cleanup_files()
         return True
 
-    def _update_db(self, json_file):
-        with open(json_file) as f:
+    def _update_db(self, xml_file, xml_hash):
+        with open(xml_file) as f:
             data = xmltodict.parse(f.read())
             data = data['Attack_Pattern_Catalog']['Attack_Patterns']['Attack_Pattern']
             i = 0
@@ -79,7 +85,7 @@ class CAPECUpdater:
                         'weaknesses': related_cwe}
                 self.driver.write_entry_capec(info)
                 i += 1
-            self.driver.write_info_capec({'version': os.path.splitext(self.url.rsplit('/', 1)[-1])[0]})
+            self.driver.write_info_capec(xml_hash)
 
     def _cleanup_files(self):
         os.remove(join(self.path, self.url.rsplit('/', 1)[-1]))
