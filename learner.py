@@ -20,8 +20,8 @@ class FeatureSelection:
 
     def select(self):
         schema = Utils.get_available_feature_schema(self.data)
-        X = [Utils.get_element_feature(schema, item) for item in self.data]
-        Y = [Utils.get_target_function_value(self.data, item) for item in self.data]
+        X = [Utils.get_element_feature(schema, event.details, event.date) for event in self.data]
+        Y = [Utils.get_target_function_value(self.data, event) for event in self.data]
         if self.mode == SelectorMode.fromModel:
             selector = SelectFromModel(estimator=LinearRegression())
         else:
@@ -32,7 +32,7 @@ class FeatureSelection:
         return Utils.get_filtered_schema(schema, features)
 
 
-class LinearModel:
+class TessModel:
 
     def __init__(self, data=None, schema=None):
         self.data = data
@@ -43,8 +43,8 @@ class LinearModel:
         if self.data is None or self.schema is None:
             raise ValueError("You can't fit the model without having a data and schema")
         schema = Utils.get_available_feature_schema(self.data)
-        X = [Utils.get_element_feature(schema, item) for item in self.data]
-        Y = [Utils.get_target_function_value(self.data, item) for item in self.data]
+        X = [Utils.get_element_feature(schema, event.details, event.date) for event in self.data]
+        Y = [Utils.get_target_function_value(self.data, event) for event in self.data]
         self.model.fit(X, Y)
 
     def learn(self, X, Y):
@@ -52,6 +52,9 @@ class LinearModel:
 
     def predict(self, input):
         return self.model.predict(input)
+
+    def get_exploitability(self, vulnerability, time):
+        return vulnerability.e_score * self.model.predict([Utils.get_element_feature(self.schema, vulnerability,time)])
 
     def save(self, filename_model, filename_schema):
         dump(self.model, filename_model)
