@@ -35,15 +35,20 @@ class HistoryParser:
                 if (today - published).days < 365:
                     print('Ignoring event for {}'.format(row['id']))
                     continue
-                keywords = rake.run(info['cve']['description']['description_data'][0]['value'])
-                keywords = [item[0] for item in keywords if item[1] > 1.0]
-                keywords = self._transform_keywords(keywords)
-                capec = [(item['id'], item['name']) for item in info['capec']]
-                exploitability_score = info['impact']['baseMetricV3']['exploitabilityScore']
-                cvss_vector = info['impact']['baseMetricV3']['cvssV3']['vectorString']
-                vuln_details = Vulnerability(keywords, capec, exploitability_score, cvss_vector,
-                                             len(info['cve']['references']['reference_data']),
-                                             dateparser.parse(info['publishedDate']))
+                vuln_details = None
+                for item in self.data:
+                    if item.id == row['id']:
+                        vuln_details = item.details
+                if vuln_details is None:
+                    keywords = rake.run(info['cve']['description']['description_data'][0]['value'])
+                    keywords = [item[0] for item in keywords if item[1] > 1.0]
+                    keywords = self._transform_keywords(keywords)
+                    capec = [(item['id'], item['name']) for item in info['capec']]
+                    exploitability_score = info['impact']['baseMetricV3']['exploitabilityScore']
+                    cvss_vector = info['impact']['baseMetricV3']['cvssV3']['vectorString']
+                    vuln_details = Vulnerability(keywords, capec, exploitability_score, cvss_vector,
+                                                 len(info['cve']['references']['reference_data']),
+                                                 dateparser.parse(info['publishedDate']))
                 vuln_event = VulnerabilityEvent(row['id'], row['data'], row['outcome'], vuln_details)
                 self.data.append(vuln_event)
 
