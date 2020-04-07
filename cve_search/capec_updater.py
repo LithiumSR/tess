@@ -52,7 +52,7 @@ class CAPECUpdater:
                 related_cwe = []
                 likelihood = None
                 typical_severity = None
-                id_capec = "CAPEC-"+data[i]['@ID']
+                id_capec = "CAPEC-" + data[i]['@ID']
                 name = data[i]['@Name']
                 description = data[i]['Description']
                 if 'Prerequisites' in data[i].keys():
