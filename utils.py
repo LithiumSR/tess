@@ -1,4 +1,4 @@
-class FeatureExtraction:
+class Utils:
 
     @staticmethod
     def get_available_feature_schema(data):
@@ -7,7 +7,7 @@ class FeatureExtraction:
         for el in data:
             capec_entries.extend([item[0].lower() for item in el.details.capec])
             keywords_entries.extend([item.lower() for item in el.details.keywords])
-        return list(set(keywords_entries)) + list(set(capec_entries)) + ['__ref_number__']
+        return list(set(keywords_entries)) + list(set(capec_entries)) + ['__cvss_expl', '__ref_number', '__days_diff']
 
     @staticmethod
     def get_element_feature(schema, el):
@@ -18,11 +18,11 @@ class FeatureExtraction:
                 features[index] = 1
             except ValueError:
                 pass
-        features[len(schema) - 1] = el.details.references_number
+        features[schema.index('__days_diff')] = (el.date - el.details.published_date.replace(tzinfo=None)).days
+        features[schema.index('__ref_number')] = el.details.references_number
+        features[schema.index('__cvss_expl')] = el.details.e_score
         return features
 
-
-class TargetFunctionEstimator:
     @staticmethod
     def get_target_function_value(data, el):
         valid_events = []
