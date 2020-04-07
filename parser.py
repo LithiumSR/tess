@@ -5,7 +5,6 @@ import dateparser
 from RAKE import RAKE
 
 from cve_search.api import CVESearch
-from utils import FeatureExtraction, TargetFunctionEstimator
 from vulnerability import VulnerabilityEvent, Vulnerability
 
 
@@ -79,12 +78,3 @@ class HistoryParser:
             if to_append is None and not ignore:
                 ret.append(keyword.lower())
         return ret
-
-
-if __name__ == '__main__':
-    parser = HistoryParser("data/dataset.csv")
-    parser.load()
-    schema = FeatureExtraction.get_available_feature_schema(parser.data)
-    for el in parser.data:
-        print(FeatureExtraction.get_element_feature(schema, el))
-        print(TargetFunctionEstimator.get_target_function_value(parser.data, el))
