@@ -36,3 +36,20 @@ class Utils:
         if len(valid_events) == 0:
             return el.details.e_score
         return el.details.e_score * (pos / (len(valid_events)))
+
+    @staticmethod
+    def get_filtered_schema(schema, filter):
+        ret = []
+        for i in range(len(schema)):
+            if filter[i]:
+                ret.append(schema[i])
+        return ret
+
+
+"""
+    @staticmethod
+    def batch(iterable, size):
+        it = iter(iterable)
+        while item := list(itertools.islice(it, size)):
+            yield item
+"""
