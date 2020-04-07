@@ -1,9 +1,11 @@
 import csv
+from datetime import datetime, timezone
 
 import dateparser
 from RAKE import RAKE
 
 from cve_search.api import CVESearch
+from utils import FeatureExtraction, TargetFunctionEstimator
 from vulnerability import VulnerabilityEvent, Vulnerability
 
 
@@ -27,18 +29,23 @@ class HistoryParser:
         rake = RAKE.Rake("./data/stopwords.csv")
         with open(self.path, mode='r') as csv_file:
             csv_reader = csv.DictReader(csv_file, delimiter=',')
+            today = datetime.now(timezone.utc)
             for row in csv_reader:
                 info = cve.find_cve_by_id(row['id'])
-                vuln_event = VulnerabilityEvent(row['id'], row['data'], row['outcome'])
-                vuln_event.published = dateparser.parse(info['publishedDate'])
+                published = dateparser.parse(info['publishedDate'])
+                if (today - published).days < 365:
+                    print('Ignoring event for {}'.format(row['id']))
+                    continue
                 keywords = rake.run(info['cve']['description']['description_data'][0]['value'])
                 keywords = [item[0] for item in keywords if item[1] > 1.0]
                 keywords = self._transform_keywords(keywords)
-                capec = [item['name'] for item in info['capec']]
+                capec = [(item['id'], item['name']) for item in info['capec']]
                 exploitability_score = info['impact']['baseMetricV3']['exploitabilityScore']
                 cvss_vector = info['impact']['baseMetricV3']['cvssV3']['vectorString']
-                vuln_details = Vulnerability(keywords, capec, exploitability_score, cvss_vector, len(info['cve']['references']['reference_data']))
-                vuln_event.vuln_details = vuln_details
+                vuln_details = Vulnerability(keywords, capec, exploitability_score, cvss_vector,
+                                             len(info['cve']['references']['reference_data']),
+                                             dateparser.parse(info['publishedDate']))
+                vuln_event = VulnerabilityEvent(row['id'], row['data'], row['outcome'], vuln_details)
                 self.data.append(vuln_event)
 
     def _transform_keywords(self, keywords):
@@ -73,4 +80,11 @@ class HistoryParser:
                 ret.append(keyword.lower())
         return ret
 
-HistoryParser("data/dataset.csv").load()
+
+if __name__ == '__main__':
+    parser = HistoryParser("data/dataset.csv")
+    parser.load()
+    schema = FeatureExtraction.get_available_feature_schema(parser.data)
+    for el in parser.data:
+        print(FeatureExtraction.get_element_feature(schema, el))
+        print(TargetFunctionEstimator.get_target_function_value(parser.data, el))
