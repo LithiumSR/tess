@@ -1,3 +1,8 @@
+import dateparser
+
+from tess.data.vulnerability import Vulnerability
+
+
 class Utils:
 
     @staticmethod
@@ -44,6 +49,18 @@ class Utils:
             if filter[i]:
                 ret.append(schema[i])
         return ret
+
+    @staticmethod
+    def get_vulnerability(cve_id, cve_search, key_parser):
+        info = cve_search.find_cve_by_id(cve_id)
+        keywords = key_parser.parse(info['cve']['description']['description_data'][0]['value'])
+        capec = [(item['id'], item['name']) for item in info['capec']]
+        exploitability_score = info['impact']['baseMetricV3']['exploitabilityScore']
+        cvss_vector = info['impact']['baseMetricV3']['cvssV3']['vectorString']
+        vuln_details = Vulnerability(keywords, capec, exploitability_score, cvss_vector,
+                                     len(info['cve']['references']['reference_data']),
+                                     dateparser.parse(info['publishedDate']))
+        return vuln_details
 
 
 """
