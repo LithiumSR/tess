@@ -2,9 +2,10 @@ import argparse
 import sys
 from os.path import abspath
 
-from learner import FeatureSelection, SelectorMode, TessModel
-from parser import HistoryParser
-from validator import PerformanceValidator, ValidationMethod
+from tess.model.feature_selection import SelectorMode, FeatureSelection
+from tess.model.linear_model import TessLinearModel
+from tess.parser import HistoryParser
+from tess.validator import PerformanceValidator, ValidationMethod
 
 
 def main():
@@ -39,8 +40,9 @@ def main():
         parser = HistoryParser(abspath(args.d))
         parser.load()
         filtered_schema = FeatureSelection(parser.data, sel_mode).select()
-        model = TessModel(parser.data,filtered_schema)
-        model.save(abspath(args.o+'_model.tess'), abspath(args.o+'_schema.tess'))
+        model = TessLinearModel(parser.data, filtered_schema)
+        model.save(abspath(args.o + '_model.tess'), abspath(args.o + '_schema.tess'))
+
 
 def getparser(mode):
     parser = argparse.ArgumentParser(prog="python3 tess.py " + mode)
@@ -51,7 +53,8 @@ def getparser(mode):
         parser.add_argument('-sm', '-sel_mode', help='Feature selection mode [model|RFECV]', default='model')
     else:
         parser.add_argument('-d', '-dataset', help='Dataset used to fit the model')
-        parser.add_argument('-o', '-output', help='Prefix of the file name of the dump of the model and the feature schema')
+        parser.add_argument('-o', '-output',
+                            help='Prefix of the file name of the dump of the model and the feature schema')
         parser.add_argument('-sm', '-sel_mode', help='Feature selection mode [model|RFECV]', default='model')
     return parser
 

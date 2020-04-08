@@ -5,8 +5,8 @@ from sklearn.metrics import explained_variance_score, max_error, mean_absolute_e
     mean_squared_log_error, median_absolute_error, r2_score
 from sklearn.model_selection import ShuffleSplit, KFold
 
-from learner import TessModel
-from utils import Utils
+from tess.model.linear_model import TessLinearModel
+from tess.utils import Utils
 
 
 class ValidationMethod(Enum):
@@ -33,7 +33,7 @@ class PerformanceValidator:
         for train_index, test_index in selector.split(X):
             X_train, X_test = X[train_index.astype(int)], X[test_index.astype(int)]
             y_train, y_test = Y[train_index.astype(int)], Y[test_index.astype(int)]
-            model = TessModel(X_train, schema)
+            model = TessLinearModel(X_train, schema)
             model.learn(X_train, y_train)
             partial_res = PerformanceValidator.get_perf_model(model, X_test, y_test)
             ret = {k: ret.get(k, 0) + partial_res.get(k, 0) for k in ret.keys()}

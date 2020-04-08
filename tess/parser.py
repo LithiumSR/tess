@@ -6,7 +6,7 @@ import dateparser
 from RAKE import RAKE
 
 from cve_search.api import CVESearch
-from vulnerability import VulnerabilityEvent, Vulnerability
+from tess.data.vulnerability import VulnerabilityEvent, Vulnerability
 
 
 class HistoryParser:
@@ -20,14 +20,14 @@ class HistoryParser:
             return self.data
         self.data = []
         self.exceptions = []
-        with open(os.path.dirname(os.path.abspath(__file__)) + '/data/exceptions.csv', mode='r') as csv_file:
+        with open(os.path.dirname(os.path.abspath(__file__)) + '/../data/exceptions.csv', mode='r') as csv_file:
             csv_reader = csv.reader(csv_file, delimiter=',')
             for row in csv_reader:
                 row = [el.lower() for el in row]
                 self.exceptions.append(row)
         cve = CVESearch()
-        rake = RAKE.Rake(os.path.dirname(os.path.abspath(__file__)) + '/data/stopwords.csv')
-        with open(self.data_path , mode='r') as csv_file:
+        rake = RAKE.Rake(os.path.dirname(os.path.abspath(__file__)) + '/../data/stopwords.csv')
+        with open(self.data_path, mode='r') as csv_file:
             csv_reader = csv.DictReader(csv_file, delimiter=',')
             today = datetime.now(timezone.utc)
             for row in csv_reader:
