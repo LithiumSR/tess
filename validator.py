@@ -9,7 +9,7 @@ from learner import TessModel
 from utils import Utils
 
 
-class SelectionMethod(Enum):
+class ValidationMethod(Enum):
     KFold = 0
     ShuffleSplit = 1
 
@@ -17,7 +17,7 @@ class SelectionMethod(Enum):
 class PerformanceValidator:
 
     @staticmethod
-    def get_perf(data, schema, n_splits=5, selection_method=SelectionMethod.ShuffleSplit):
+    def get_perf(data, schema, n_splits=5, selection_method=ValidationMethod.ShuffleSplit):
         ret = {'exp_var': 0, 'max_error': 0, 'mean_abs_error': 0, 'mean_squared_error': 0,
                'mean_squared_log_error': 0, 'median_abs_error': 0, 'r2': 0}
         X = [Utils.get_element_feature(schema, event.details, event.date) for event in data]
@@ -25,7 +25,7 @@ class PerformanceValidator:
         X = np.array(X)
         Y = np.array(Y)
 
-        if selection_method == SelectionMethod.KFold:
+        if selection_method == ValidationMethod.KFold:
             selector = KFold(n_splits=n_splits, shuffle=True)
         else:
             selector = ShuffleSplit(n_splits=n_splits, test_size=.25, random_state=0)

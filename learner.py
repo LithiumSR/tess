@@ -50,11 +50,11 @@ class TessModel:
     def learn(self, X, Y):
         self.model.fit(X, Y)
 
-    def predict(self, input):
-        return self.model.predict(input)
+    def predict(self, elem):
+        return self.model.predict(elem)
 
     def get_exploitability(self, vulnerability, time):
-        return vulnerability.e_score * self.model.predict([Utils.get_element_feature(self.schema, vulnerability,time)])
+        return vulnerability.e_score * self.model.predict([Utils.get_element_feature(self.schema, vulnerability, time)])
 
     def save(self, filename_model, filename_schema):
         dump(self.model, filename_model)
@@ -64,3 +64,6 @@ class TessModel:
         self.model = load(filename_model)
         self.schema = load(filename_schema)
         return self.model, self.schema
+
+    def get_coeff(self):
+        return self.model.coef_
