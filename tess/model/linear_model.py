@@ -40,11 +40,16 @@ class TessLinearModel:
 
     def save(self, filename_model, filename_schema):
         dump(self.model, filename_model)
-        dump(self.schema, filename_schema)
+        with open(filename_schema, 'w') as f:
+            for elem in self.schema:
+                f.write(elem+'\n')
 
     def load(self, filename_model, filename_schema):
         self.model = load(filename_model)
-        self.schema = load(filename_schema)
+        self.schema = []
+        with open(filename_schema, 'r') as f:
+            for line in f:
+                self.schema.append(line.strip())
         return self.model, self.schema
 
     def get_coeff(self):
