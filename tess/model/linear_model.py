@@ -1,15 +1,21 @@
 from joblib import dump, load
 from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import PolynomialFeatures
+from sklearn.svm import SVR
 
 from tess.utils import Utils
 
 
 class TessLinearModel:
 
-    def __init__(self, data=None, schema=None):
+    def __init__(self, data=None, schema=None, degree=5):
         self.data = data
         self.schema = schema
-        self.model = LinearRegression()
+        if len(data) > 10000:
+            self.model = SVR()
+        else:
+            self.model = LinearRegression()
+            self.poly_features = PolynomialFeatures(degree)
 
     def learn_by_data(self):
         if self.data is None or self.schema is None:
@@ -17,13 +23,17 @@ class TessLinearModel:
         schema = Utils.get_available_feature_schema(self.data)
         X = [Utils.get_element_feature(schema, event.details, event.date) for event in self.data]
         Y = [Utils.get_target_function_value(self.data, event) for event in self.data]
+        if self.poly_features is not None:
+            X = self.poly_features.fit_transform(X)
         self.model.fit(X, Y)
 
     def learn(self, X, Y):
+        if self.poly_features is not None:
+            X = self.poly_features.fit_transform(X)
         self.model.fit(X, Y)
 
     def predict(self, elem):
-        return self.model.predict(elem)
+        return self.model.predict(self.poly_features.fit_transform(elem))
 
     def get_exploitability(self, vulnerability, time):
         return vulnerability.e_score * self.model.predict([Utils.get_element_feature(self.schema, vulnerability, time)])
