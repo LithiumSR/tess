@@ -61,8 +61,11 @@ class Utils:
             capec = []
         else:
             capec = [(item['id'], item['name']) for item in info['capec']]
-        exploitability_score = info['impact']['baseMetricV3']['exploitabilityScore']
-        cvss_vector = info['impact']['baseMetricV3']['cvssV3']['vectorString']
+        try:
+            exploitability_score = info['impact']['baseMetricV3']['exploitabilityScore']
+            cvss_vector = info['impact']['baseMetricV3']['cvssV3']['vectorString']
+        except KeyError:
+            return None
         vuln_details = Vulnerability(keywords, capec, exploitability_score, cvss_vector,
                                      len(info['cve']['references']['reference_data']),
                                      dateparser.parse(info['publishedDate']))

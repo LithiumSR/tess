@@ -43,6 +43,8 @@ class HistoryParser:
                         vuln_details = item.details
                 if vuln_details is None:
                     vuln_details = Utils.get_vulnerability(row['id'], cve, key_parser, self.skip_capec, self.skip_keywords)
+                if vuln_details is None:
+                    continue
                 vuln_event = VulnerabilityEvent(row['id'], row['data'], row['outcome'], vuln_details)
                 self.data.append(vuln_event)
 
