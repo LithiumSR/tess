@@ -51,10 +51,16 @@ class Utils:
         return ret
 
     @staticmethod
-    def get_vulnerability(cve_id, cve_search, key_parser):
+    def get_vulnerability(cve_id, cve_search, key_parser, skip_capec = False, skip_keywords=False):
         info = cve_search.find_cve_by_id(cve_id)
-        keywords = key_parser.parse(info['cve']['description']['description_data'][0]['value'])
-        capec = [(item['id'], item['name']) for item in info['capec']]
+        if skip_keywords is None:
+            keywords = []
+        else:
+            keywords = key_parser.parse(info['cve']['description']['description_data'][0]['value'])
+        if skip_capec is None:
+            capec = []
+        else:
+            capec = [(item['id'], item['name']) for item in info['capec']]
         exploitability_score = info['impact']['baseMetricV3']['exploitabilityScore']
         cvss_vector = info['impact']['baseMetricV3']['cvssV3']['vectorString']
         vuln_details = Vulnerability(keywords, capec, exploitability_score, cvss_vector,

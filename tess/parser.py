@@ -11,12 +11,17 @@ from tess.utils import Utils
 
 
 class HistoryParser:
-    def __init__(self, data_path):
+    def __init__(self, data_path, skip_capec=False, skip_keywords=False):
         self.data_path = data_path
         self.data = None
         self.exceptions = None
+        self.skip_capec = skip_capec
+        self.skip_keywords = skip_keywords
+
 
     def load(self):
+        if self.skip_capec is None and self.skip_keywords is None:
+            raise AttributeError("Can't skip both capec entries and keywords!")
         if self.data is not None:
             return self.data
         self.data = []
@@ -37,7 +42,7 @@ class HistoryParser:
                     if item.id == row['id']:
                         vuln_details = item.details
                 if vuln_details is None:
-                    vuln_details = Utils.get_vulnerability(row['id'], cve, key_parser)
+                    vuln_details = Utils.get_vulnerability(row['id'], cve, key_parser, self.skip_capec, self.skip_keywords)
                 vuln_event = VulnerabilityEvent(row['id'], row['data'], row['outcome'], vuln_details)
                 self.data.append(vuln_event)
 
