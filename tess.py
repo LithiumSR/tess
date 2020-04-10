@@ -40,7 +40,7 @@ def main():
         parser = HistoryParser(abspath(args.d))
         parser.load()
         filtered_schema = FeatureSelection(parser.data, sel_mode).select()
-        model = TessLinearModel(parser.data, filtered_schema)
+        model = TessLinearModel(parser.data, filtered_schema, degree=args.deg)
         model.save(abspath(args.o + '_model.tess'), abspath(args.o + '_schema.tess'))
 
 
@@ -49,10 +49,12 @@ def getparser(mode):
     if mode == 'evaluate':
         parser.add_argument('-d', '-dataset', help='Dataset used to fit and test model through  cross validation')
         parser.add_argument('-n', '-n_split', help='Number of split when cross validating')
+        parser.add_argument('-deg', '-degree', help='Number of degree used when fitting linear model', default=5)
         parser.add_argument('-cm', '-cross_mode', help='Cross validation mode [kfold|shuffle]', default='kfold')
         parser.add_argument('-sm', '-sel_mode', help='Feature selection mode [model|RFECV]', default='model')
     else:
         parser.add_argument('-d', '-dataset', help='Dataset used to fit the model')
+        parser.add_argument('-deg', '-degree', help='Number of degree used when fitting linear model', default=5)
         parser.add_argument('-o', '-output',
                             help='Prefix of the file name of the dump of the model and the feature schema')
         parser.add_argument('-sm', '-sel_mode', help='Feature selection mode [model|RFECV]', default='model')

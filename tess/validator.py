@@ -17,7 +17,7 @@ class ValidationMethod(Enum):
 class PerformanceValidator:
 
     @staticmethod
-    def get_perf(data, schema, n_splits=5, selection_method=ValidationMethod.ShuffleSplit):
+    def get_perf(data, schema, n_splits=5, degree=5, selection_method=ValidationMethod.ShuffleSplit):
         ret = {'exp_var': 0, 'max_error': 0, 'mean_abs_error': 0, 'mean_squared_error': 0,
                'mean_squared_log_error': 0, 'median_abs_error': 0, 'r2': 0}
         X = [Utils.get_element_feature(schema, event.details, event.date) for event in data]
@@ -33,7 +33,7 @@ class PerformanceValidator:
         for train_index, test_index in selector.split(X):
             X_train, X_test = X[train_index.astype(int)], X[test_index.astype(int)]
             y_train, y_test = Y[train_index.astype(int)], Y[test_index.astype(int)]
-            model = TessLinearModel(X_train, schema)
+            model = TessLinearModel(X_train, schema, degree=degree)
             model.learn(X_train, y_train)
             partial_res = PerformanceValidator.get_perf_model(model, X_test, y_test)
             ret = {k: ret.get(k, 0) + partial_res.get(k, 0) for k in ret.keys()}
