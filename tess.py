@@ -3,7 +3,7 @@ import sys
 from os.path import abspath
 
 from tess.model.feature_selection import SelectorMode, FeatureSelection
-from tess.model.linear_model import TessLinearModel
+from tess.model.svr_model import TessSVRModel
 from tess.model.neural_model import TessNeuralModel
 from tess.parser import HistoryParser
 from tess.validator import PerformanceValidator, ValidationMethod
@@ -45,7 +45,7 @@ def main():
         if args.nn:
             model = TessNeuralModel(parser.data, filtered_schema, epochs=args.e, batch_size=args.bs)
         else:
-            model = TessLinearModel(parser.data, filtered_schema)
+            model = TessSVRModel(parser.data, filtered_schema)
         model.learn_by_data()
         model.save(abspath(args.o + '_model.tess'), abspath(args.o + '_schema.tess'))
 

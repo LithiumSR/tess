@@ -5,7 +5,7 @@ from sklearn.metrics import explained_variance_score, max_error, mean_absolute_e
     mean_squared_log_error, median_absolute_error, r2_score
 from sklearn.model_selection import ShuffleSplit, KFold
 
-from tess.model.linear_model import TessLinearModel
+from tess.model.svr_model import TessSVRModel
 from tess.model.neural_model import TessNeuralModel
 from tess.utils import Utils
 
@@ -37,7 +37,7 @@ class PerformanceValidator:
             if is_nn:
                 model = TessNeuralModel(schema=schema, epochs=epochs, batch_size=batch_size)
             else:
-                model = TessLinearModel(schema=schema)
+                model = TessSVRModel(schema=schema)
             model.learn(X_train, y_train)
             partial_res = PerformanceValidator.get_perf_model(model, X_test, y_test)
             ret = {k: ret.get(k, 0) + partial_res.get(k, 0) for k in ret.keys()}
