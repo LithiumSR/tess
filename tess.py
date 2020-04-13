@@ -4,6 +4,7 @@ from os.path import abspath
 
 from tess.model.feature_selection import SelectorMode, FeatureSelection
 from tess.model.linear_model import TessLinearModel
+from tess.model.neural_model import TessNeuralModel
 from tess.parser import HistoryParser
 from tess.validator import PerformanceValidator, ValidationMethod
 
@@ -31,7 +32,8 @@ def main():
         print('Selecting features...')
         filtered_schema = FeatureSelection(parser.data, sel_mode).select()
         print('Starting validation...')
-        print(PerformanceValidator.get_perf(parser.data, filtered_schema, selection_method=cross_mode, n_splits=5))
+        print(PerformanceValidator.get_perf(parser.data, filtered_schema, selection_method=cross_mode, n_splits=5,
+                                            is_nn=args.nn, epochs=args.e, batch_size=args.bs))
     elif mode == 'learn':
         if args.sm.lower() == 'rfecv':
             sel_mode = SelectorMode.RFECV
@@ -40,7 +42,11 @@ def main():
         parser = HistoryParser(abspath(args.d))
         parser.load()
         filtered_schema = FeatureSelection(parser.data, sel_mode).select()
-        model = TessLinearModel(parser.data, filtered_schema, degree=args.deg)
+        if args.nn:
+            model = TessNeuralModel(parser.data, filtered_schema, epochs=args.e, batch_size=args.bs)
+        else:
+            model = TessLinearModel(parser.data, filtered_schema)
+        model.learn_by_data()
         model.save(abspath(args.o + '_model.tess'), abspath(args.o + '_schema.tess'))
 
 
@@ -49,15 +55,22 @@ def getparser(mode):
     if mode == 'evaluate':
         parser.add_argument('-d', '-dataset', help='Dataset used to fit and test model through  cross validation')
         parser.add_argument('-n', '-n_split', help='Number of split when cross validating')
-        parser.add_argument('-deg', '-degree', help='Number of degree used when fitting linear model', default=5)
+        parser.add_argument('-e', '-epochs', help='Number of epochs used when fitting the neural network', default=500)
+        parser.add_argument('-bs', '-batch_size', help='Size of the batch passed to the model', default=1)
+        parser.add_argument('-nn', action='store_true', help='Use a neural network as a model instead of SVR',
+                            default=True)
         parser.add_argument('-cm', '-cross_mode', help='Cross validation mode [kfold|shuffle]', default='kfold')
         parser.add_argument('-sm', '-sel_mode', help='Feature selection mode [model|RFECV]', default='model')
     else:
         parser.add_argument('-d', '-dataset', help='Dataset used to fit the model')
-        parser.add_argument('-deg', '-degree', help='Number of degree used when fitting linear model', default=5)
         parser.add_argument('-o', '-output',
                             help='Prefix of the file name of the dump of the model and the feature schema')
+        parser.add_argument('-e', '-epochs', help='Number of epochs used when fitting the neural network', default=500)
+        parser.add_argument('-bs', '-batch_size', help='Size of the batch passed to the model', default=1)
+        parser.add_argument('-nn', action='store_true', help='Use a neural network as a model instead of SVR',
+                            default=True)
         parser.add_argument('-sm', '-sel_mode', help='Feature selection mode [model|RFECV]', default='model')
+
     return parser
 
 
