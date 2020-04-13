@@ -51,7 +51,7 @@ class Utils:
         return ret
 
     @staticmethod
-    def get_vulnerability(cve_id, cve_search, key_parser, skip_capec = False, skip_keywords=False):
+    def get_vulnerability(cve_id, cve_search, key_parser, skip_capec=False, skip_keywords=False):
         info = cve_search.find_cve_by_id(cve_id)
         if skip_keywords is None:
             keywords = []

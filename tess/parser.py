@@ -6,7 +6,7 @@ import dateparser
 from RAKE import RAKE
 
 from cve_search.api import CVESearch
-from tess.data.vulnerability import VulnerabilityEvent, Vulnerability
+from tess.data.vulnerability import VulnerabilityEvent
 from tess.utils import Utils
 
 
@@ -17,7 +17,6 @@ class HistoryParser:
         self.exceptions = None
         self.skip_capec = skip_capec
         self.skip_keywords = skip_keywords
-
 
     def load(self):
         if self.skip_capec is None and self.skip_keywords is None:
@@ -42,7 +41,8 @@ class HistoryParser:
                     if item.id == row['id']:
                         vuln_details = item.details
                 if vuln_details is None:
-                    vuln_details = Utils.get_vulnerability(row['id'], cve, key_parser, self.skip_capec, self.skip_keywords)
+                    vuln_details = Utils.get_vulnerability(row['id'], cve, key_parser, self.skip_capec,
+                                                           self.skip_keywords)
                 if vuln_details is None:
                     continue
                 vuln_event = VulnerabilityEvent(row['id'], row['data'], row['outcome'], vuln_details)

@@ -2,7 +2,7 @@ import keras
 import numpy as np
 from keras.layers import Dense
 from keras.models import Sequential
-from keras.optimizers import SGD, RMSprop
+from keras.optimizers import RMSprop
 
 from tess.utils import Utils
 

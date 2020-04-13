@@ -31,7 +31,7 @@ class TessSVRModel:
         dump(self.model, filename_model)
         with open(filename_schema, 'w') as f:
             for elem in self.schema:
-                f.write(elem+'\n')
+                f.write(elem + '\n')
 
     def load(self, filename_model, filename_schema):
         self.model = load(filename_model)

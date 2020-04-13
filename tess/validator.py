@@ -5,8 +5,8 @@ from sklearn.metrics import explained_variance_score, max_error, mean_absolute_e
     mean_squared_log_error, median_absolute_error, r2_score
 from sklearn.model_selection import ShuffleSplit, KFold
 
-from tess.model.svr_model import TessSVRModel
 from tess.model.neural_model import TessNeuralModel
+from tess.model.svr_model import TessSVRModel
 from tess.utils import Utils
 
 
@@ -18,7 +18,8 @@ class ValidationMethod(Enum):
 class PerformanceValidator:
 
     @staticmethod
-    def get_perf(data, schema, n_splits=5, selection_method=ValidationMethod.ShuffleSplit, is_nn=False, epochs=100, batch_size=1):
+    def get_perf(data, schema, n_splits=5, selection_method=ValidationMethod.ShuffleSplit, is_nn=False, epochs=100,
+                 batch_size=1):
         ret = {'exp_var': 0, 'max_error': 0, 'mean_abs_error': 0, 'mean_squared_error': 0,
                'mean_squared_log_error': 0, 'median_abs_error': 0, 'r2': 0}
         X = [np.array(Utils.get_element_feature(schema, event.details, event.date)) for event in data]
