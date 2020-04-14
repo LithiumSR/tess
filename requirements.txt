@@ -6,3 +6,5 @@ sklearn
 joblib
 requests
 pymongo
+lightgbm
+h5py
