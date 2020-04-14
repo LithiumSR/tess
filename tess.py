@@ -30,7 +30,7 @@ def main():
         parser = HistoryParser(abspath(args.d))
         parser.load()
         print('Selecting features...')
-        filtered_schema = FeatureSelection(parser.data, sel_mode).select()
+        filtered_schema = FeatureSelection(parser.data, sel_mode, threshold=args.ts).select()
         print('Starting validation...')
         print(PerformanceValidator.get_perf(parser.data, filtered_schema, selection_method=cross_mode, n_splits=5,
                                             is_nn=args.nn, epochs=args.e, batch_size=args.bs))
@@ -41,7 +41,7 @@ def main():
             sel_mode = SelectorMode.fromModel
         parser = HistoryParser(abspath(args.d))
         parser.load()
-        filtered_schema = FeatureSelection(parser.data, sel_mode).select()
+        filtered_schema = FeatureSelection(parser.data, sel_mode, threshold=args.ts).select()
         if args.nn:
             model = TessNeuralModel(parser.data, filtered_schema, epochs=args.e, batch_size=args.bs)
         else:
@@ -57,6 +57,7 @@ def getparser(mode):
         parser.add_argument('-n', '-n_split', help='Number of split when cross validating')
         parser.add_argument('-e', '-epochs', help='Number of epochs used when fitting the neural network', default=500)
         parser.add_argument('-bs', '-batch_size', help='Size of the batch passed to the model', default=1)
+        parser.add_argument('-ts', '-threshold', help='Threshold for feature selection', default=1)
         parser.add_argument('-nn', action='store_true', help='Use a neural network as a model instead of SVR',
                             default=True)
         parser.add_argument('-cm', '-cross_mode', help='Cross validation mode [kfold|shuffle]', default='kfold')
@@ -67,6 +68,7 @@ def getparser(mode):
                             help='Prefix of the file name of the dump of the model and the feature schema')
         parser.add_argument('-e', '-epochs', help='Number of epochs used when fitting the neural network', default=500)
         parser.add_argument('-bs', '-batch_size', help='Size of the batch passed to the model', default=1)
+        parser.add_argument('-ts', '-threshold', help='Threshold for feature selection', default=1)
         parser.add_argument('-nn', action='store_true', help='Use a neural network as a model instead of SVR',
                             default=True)
         parser.add_argument('-sm', '-sel_mode', help='Feature selection mode [model|RFECV]', default='model')
