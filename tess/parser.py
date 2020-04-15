@@ -11,12 +11,13 @@ from tess.utils import Utils
 
 
 class HistoryParser:
-    def __init__(self, data_path, skip_capec=False, skip_keywords=False):
+    def __init__(self, data_path, skip_capec=False, skip_keywords=False, min_age=365):
         self.data_path = data_path
         self.data = None
         self.exceptions = None
         self.skip_capec = skip_capec
         self.skip_keywords = skip_keywords
+        self.min_age = min_age
 
     def load(self):
         if self.skip_capec is None and self.skip_keywords is None:
@@ -33,7 +34,7 @@ class HistoryParser:
             for row in csv_reader:
                 info = cve.find_cve_by_id(row['id'])
                 published = dateparser.parse(info['publishedDate'])
-                if (today - published).days < 365:
+                if (today - published).days < self.min_age:
                     print('Ignoring event for {}'.format(row['id']))
                     continue
                 vuln_details = None
