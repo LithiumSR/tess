@@ -3,8 +3,8 @@ import sys
 from os.path import abspath
 
 from tess.model.feature_selection import FeatureSelection
-from tess.model.svr_model import TessSVRModel
 from tess.model.neural_model import TessNeuralModel
+from tess.model.svr_model import TessSVRModel
 from tess.parser import HistoryParser
 from tess.validator import PerformanceValidator, ValidationMethod
 
@@ -35,11 +35,12 @@ def main():
         parser.load()
         filtered_schema = FeatureSelection(parser.data, threshold=args.ts).select()
         if args.nn:
-            model = TessNeuralModel(parser.data, filtered_schema, epochs=args.e, batch_size=args.bs, n_components=args.nc)
+            model = TessNeuralModel(parser.data, filtered_schema, epochs=args.e, batch_size=args.bs,
+                                    n_components=args.nc)
         else:
             model = TessSVRModel(parser.data, filtered_schema, n_components=args.nc)
         model.learn_by_data()
-        model.save(abspath(args.o + '_model.tess'), abspath(args.o + '_schema.tess'))
+        model.save(abspath(args.o + '.tess'))
 
 
 def getparser(mode):
@@ -56,8 +57,7 @@ def getparser(mode):
         parser.add_argument('-cm', '-cross_mode', help='Cross validation mode [kfold|shuffle]', default='kfold')
     else:
         parser.add_argument('-d', '-dataset', help='Dataset used to fit the model')
-        parser.add_argument('-o', '-output',
-                            help='Prefix of the file name of the dump of the model and the feature schema')
+        parser.add_argument('-o', '-output', help='Name of the .tess file containing the model')
         parser.add_argument('-e', '-epochs', help='Number of epochs used when fitting the neural network', default=500)
         parser.add_argument('-bs', '-batch_size', help='Size of the batch passed to the model', default=1)
         parser.add_argument('-ts', '-threshold', help='Threshold for feature selection', default=1)

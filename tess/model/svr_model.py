@@ -1,7 +1,7 @@
-from joblib import dump, load
-from sklearn.decomposition import IncrementalPCA, PCA
+from sklearn.decomposition import PCA
 from sklearn.svm import SVR
 
+from tess.data.tess_file_format import TessFileUtils
 from tess.utils import Utils
 
 
@@ -39,19 +39,13 @@ class TessSVRModel:
     def get_exploitability(self, vulnerability, time):
         return vulnerability.e_score * self.model.predict([Utils.get_element_feature(self.schema, vulnerability, time)])
 
-    def save(self, filename_model, filename_schema):
-        dump(self.model, filename_model)
-        with open(filename_schema, 'w') as f:
-            for elem in self.schema:
-                f.write(elem + '\n')
+    def save(self, filename):
+        if self.model is None or self.schema is None:
+            raise ValueError("Both model and schema must be set")
+        TessFileUtils.save(filename, self)
 
-    def load(self, filename_model, filename_schema):
-        self.model = load(filename_model)
-        self.schema = []
-        with open(filename_schema, 'r') as f:
-            for line in f:
-                self.schema.append(line.strip())
-        return self.model, self.schema
+    def load(self, filename):
+        TessFileUtils.load(filename, self)
 
     def get_coeff(self):
         return self.model.coef_
