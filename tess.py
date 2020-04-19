@@ -35,9 +35,9 @@ def main():
         parser.load()
         filtered_schema = FeatureSelection(parser.data, threshold=args.ts).select()
         if args.nn:
-            model = TessNeuralModel(parser.data, filtered_schema, epochs=args.e, batch_size=args.bs)
+            model = TessNeuralModel(parser.data, filtered_schema, epochs=args.e, batch_size=args.bs, n_components=args.nc)
         else:
-            model = TessSVRModel(parser.data, filtered_schema)
+            model = TessSVRModel(parser.data, filtered_schema, n_components=args.nc)
         model.learn_by_data()
         model.save(abspath(args.o + '_model.tess'), abspath(args.o + '_schema.tess'))
 
@@ -49,7 +49,8 @@ def getparser(mode):
         parser.add_argument('-n', '-n_split', help='Number of split when cross validating')
         parser.add_argument('-e', '-epochs', help='Number of epochs used when fitting the neural network', default=500)
         parser.add_argument('-bs', '-batch_size', help='Size of the batch passed to the model', default=1)
-        parser.add_argument('-ts', '-threshold', help='Threshold for feature selection', default=1)
+        parser.add_argument('-ts', '-threshold', help='Threshold for feature selection', default=0)
+        parser.add_argument('-nc', '-n_components', help='Number of components for feature reduction', default=-1)
         parser.add_argument('-nn', action='store_true', help='Use a neural network as a model instead of SVR',
                             default=True)
         parser.add_argument('-cm', '-cross_mode', help='Cross validation mode [kfold|shuffle]', default='kfold')
@@ -60,6 +61,7 @@ def getparser(mode):
         parser.add_argument('-e', '-epochs', help='Number of epochs used when fitting the neural network', default=500)
         parser.add_argument('-bs', '-batch_size', help='Size of the batch passed to the model', default=1)
         parser.add_argument('-ts', '-threshold', help='Threshold for feature selection', default=1)
+        parser.add_argument('-nc', '-n_components', help='Number of components for feature reduction', default=-1)
         parser.add_argument('-nn', action='store_true', help='Use a neural network as a model instead of SVR',
                             default=True)
 
