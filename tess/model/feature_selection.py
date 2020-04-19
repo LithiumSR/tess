@@ -1,20 +1,12 @@
-from enum import Enum
-
 import lightgbm as lgb
 
 from tess.utils import Utils
 
 
-class SelectorMode(Enum):
-    fromModel = 0
-    RFECV = 1
-
-
 class FeatureSelection:
 
-    def __init__(self, data, mode, threshold=1):
+    def __init__(self, data, threshold=1):
         self.data = data
-        self.mode = mode
         self.threshold = threshold
 
     def select(self):
