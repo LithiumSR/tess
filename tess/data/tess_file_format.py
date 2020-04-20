@@ -9,9 +9,8 @@ class TessFileUtils:
 
     @staticmethod
     def save(filename, model):
-        model_tmp = tempfile.NamedTemporaryFile(delete=False, prefix='tesstmp_')
-        schema_tmp = tempfile.NamedTemporaryFile(delete=False, prefix='tesstmp_')
-        pca_tmp = tempfile.NamedTemporaryFile(delete=False, prefix='tesstmp_')
+        model_tmp, schema_tmp, pca_tmp = [tempfile.NamedTemporaryFile(delete=False, prefix='tesstmp_') for x in
+                                          range(3)]
         from tess.model.neural_model import TessNeuralModel
         from tess.model.svr_model import TessSVRModel
         if isinstance(model, TessNeuralModel):
@@ -54,9 +53,8 @@ class TessFileUtils:
                     mode == 1 and not isinstance(model, TessSVRModel) or mode not in [0, 1]):
                 raise AttributeError("Model mismatch when restoring")
             model.use_reduction = pca_len > 0
-            model_tmp = tempfile.NamedTemporaryFile(delete=False, prefix='tesstmp_')
-            schema_tmp = tempfile.NamedTemporaryFile(delete=False, prefix='tesstmp_')
-            pca_tmp = tempfile.NamedTemporaryFile(delete=False, prefix='tesstmp_')
+            model_tmp, schema_tmp, pca_tmp = [tempfile.NamedTemporaryFile(delete=False, prefix='tesstmp_') for x
+                                              in range(3)]
             tmp_files = [(model_len, model_tmp), (schema_len, schema_tmp), (pca_len, pca_tmp)]
             for el in tmp_files:
                 with open(el[1].name, 'wb') as fo:
