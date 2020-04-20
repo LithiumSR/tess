@@ -6,6 +6,7 @@ from tess.model.feature_selection import FeatureSelection
 from tess.model.neural_model import TessNeuralModel
 from tess.model.svr_model import TessSVRModel
 from tess.parser import HistoryParser
+from tess.utils import Utils
 from tess.validator import PerformanceValidator, ValidationMethod
 
 
@@ -26,19 +27,24 @@ def main():
         parser = HistoryParser(abspath(args.d))
         parser.load()
         print('Selecting features...')
-        filtered_schema = FeatureSelection(parser.data, threshold=args.ts).select()
+        if args.skip_selection:
+            schema = Utils.get_available_feature_schema(parser.data)
+        else:
+            schema = FeatureSelection(parser.data, threshold=args.ts).select()
         print('Starting validation...')
-        print(PerformanceValidator.get_perf(parser.data, filtered_schema, selection_method=cross_mode, n_splits=5,
+        print(PerformanceValidator.get_perf(parser.data, schema, selection_method=cross_mode, n_splits=5,
                                             is_nn=args.nn, epochs=args.e, batch_size=args.bs))
     elif mode == 'learn':
         parser = HistoryParser(abspath(args.d))
         parser.load()
-        filtered_schema = FeatureSelection(parser.data, threshold=args.ts).select()
-        if args.nn:
-            model = TessNeuralModel(parser.data, filtered_schema, epochs=args.e, batch_size=args.bs,
-                                    n_components=args.nc)
+        if args.skip_selection:
+            schema = Utils.get_available_feature_schema(parser.data)
         else:
-            model = TessSVRModel(parser.data, filtered_schema, n_components=args.nc)
+            schema = FeatureSelection(parser.data, threshold=args.ts).select()
+        if args.nn:
+            model = TessNeuralModel(parser.data, schema, epochs=args.e, batch_size=args.bs, n_components=args.nc)
+        else:
+            model = TessSVRModel(parser.data, schema, n_components=args.nc)
         model.learn_by_data()
         model.save(abspath(args.o + '.tess'))
 
@@ -64,6 +70,8 @@ def getparser(mode):
         parser.add_argument('-nc', '-n_components', help='Number of components for feature reduction', default=-1)
         parser.add_argument('-nn', action='store_true', help='Use a neural network as a model instead of SVR',
                             default=True)
+        parser.add_argument('-skip_selection', action='store_true', help='Option to skip feature selection',
+                            default=False)
 
     return parser
 
