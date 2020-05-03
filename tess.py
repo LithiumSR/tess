@@ -53,21 +53,23 @@ def getparser(mode):
     parser = argparse.ArgumentParser(prog="python3 tess.py " + mode)
     if mode == 'evaluate':
         parser.add_argument('-d', '-dataset', help='Dataset used to fit and test model through  cross validation')
-        parser.add_argument('-n', '-n_split', help='Number of split when cross validating')
-        parser.add_argument('-e', '-epochs', help='Number of epochs used when fitting the neural network', default=500)
-        parser.add_argument('-bs', '-batch_size', help='Size of the batch passed to the model', default=1)
+        parser.add_argument('-n', '-n_split', help='Number of split when cross validating', type=int)
+        parser.add_argument('-e', '-epochs', help='Number of epochs used when fitting the neural network', default=500, type=int)
+        parser.add_argument('-bs', '-batch_size', help='Size of the batch passed to the model', default=1, type=int)
         parser.add_argument('-ts', '-threshold', help='Threshold for feature selection', default=0)
-        parser.add_argument('-nc', '-n_components', help='Number of components for feature reduction', default=-1)
+        parser.add_argument('-nc', '-n_components', help='Number of components for feature reduction', default=-1, type=int)
         parser.add_argument('-nn', action='store_true', help='Use a neural network as a model instead of SVR',
                             default=True)
         parser.add_argument('-cm', '-cross_mode', help='Cross validation mode [kfold|shuffle]', default='kfold')
+        parser.add_argument('-skip_selection', action='store_true', help='Option to skip feature selection',
+                            default=False)
     else:
         parser.add_argument('-d', '-dataset', help='Dataset used to fit the model')
         parser.add_argument('-o', '-output', help='Name of the .tess file containing the model')
-        parser.add_argument('-e', '-epochs', help='Number of epochs used when fitting the neural network', default=500)
-        parser.add_argument('-bs', '-batch_size', help='Size of the batch passed to the model', default=1)
-        parser.add_argument('-ts', '-threshold', help='Threshold for feature selection', default=1)
-        parser.add_argument('-nc', '-n_components', help='Number of components for feature reduction', default=-1)
+        parser.add_argument('-e', '-epochs', help='Number of epochs used when fitting the neural network', default=500, type=int)
+        parser.add_argument('-bs', '-batch_size', help='Size of the batch passed to the model', default=1, type=int)
+        parser.add_argument('-ts', '-threshold', help='Threshold for feature selection', default=1, type=int)
+        parser.add_argument('-nc', '-n_components', help='Number of components for feature reduction', default=-1, type=int)
         parser.add_argument('-nn', action='store_true', help='Use a neural network as a model instead of SVR',
                             default=True)
         parser.add_argument('-skip_selection', action='store_true', help='Option to skip feature selection',
