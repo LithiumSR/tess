@@ -55,5 +55,5 @@ class CVEChangelogScraper:
                               'old': entry.find(attrs={"data-testid": prefix + 'old'}).getText(),
                               'new': entry.find(attrs={"data-testid": prefix + 'new'}).getText()}
                 list_dict_entries.append(dict_entry)
-            history[date] = list_dict_entries
+            history[str(date)] = list_dict_entries
         return history
