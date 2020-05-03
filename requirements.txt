@@ -8,3 +8,4 @@ requests
 pymongo
 lightgbm
 h5py
+beautifulsoup4
