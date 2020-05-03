@@ -52,8 +52,13 @@ class CVEChangelogScraper:
                 entry = entries[k]
                 dict_entry = {'action': entry.find(attrs={"data-testid": prefix + 'action'}).getText(),
                               'type': entry.find(attrs={"data-testid": prefix + 'type'}).getText(),
-                              'old': entry.find(attrs={"data-testid": prefix + 'old'}).getText(),
-                              'new': entry.find(attrs={"data-testid": prefix + 'new'}).getText()}
+                              'old': CVEChangelogScraper.cleanup_text(entry.find(attrs={"data-testid": prefix + 'old'}).getText()),
+                              'new': CVEChangelogScraper.cleanup_text(entry.find(attrs={"data-testid": prefix + 'new'}).getText())}
                 list_dict_entries.append(dict_entry)
             history[str(date)] = list_dict_entries
         return history
+
+    @staticmethod
+    def cleanup_text(text):
+        text = text.replace('OR\r\n', '')
+        return text.strip()
