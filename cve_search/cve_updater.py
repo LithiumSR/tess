@@ -6,24 +6,29 @@ import os
 import shutil
 from os.path import isfile, join
 from pathlib import Path
-
+from tqdm import tqdm
 import requests
 
+from cve_search.changelog_parser import CVEChangelogScraper
 from cve_search.driver import MongoDriver
 
 
 class CVEUpdater:
-    def __init__(self, server=None, port=None, driver=None, force_update=False):
+    def __init__(self, server=None, port=None, driver=None, force_update=False, scrape_history = True,
+                 max_attemps_scraper = 5, delay_scraper = 0):
         self.path = join(os.path.dirname(join(os.path.abspath(__file__))), 'data')
         self.last_year = datetime.datetime.now().year
         self.url = 'https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-{0}.{1}'
-        self.starting_year = 2002
+        self.starting_year = 2015
         self.force_update = force_update
         self.driver = driver
+        self.scraper = None
         if self.driver is None:
             self.driver = MongoDriver(server=server, port=port)
         if not self.driver.is_connected():
             self.driver.connect()
+        if scrape_history:
+            self.scraper = CVEChangelogScraper(max_attempts=max_attemps_scraper, delay_attempt=delay_scraper)
         Path(self.path).mkdir(parents=True, exist_ok=True)
 
     def update(self):
@@ -80,6 +85,12 @@ class CVEUpdater:
             info = dict(data)
             del info['CVE_Items']
             self.driver.write_info_cve(info, year, meta_hash)
-            for entry in cve_entries:
-                self.driver.write_details_cve(entry)
+            with tqdm(desc="Year " + str(year), total=len(cve_entries)) as pbar:
+                for entry in cve_entries:
+                    cve_id = entry['cve']['CVE_data_meta']['ID']
+                    if self.scraper is not None:
+                        history = self.scraper.get_history(cve_id)
+                        entry['history'] = history
+                    self.driver.write_details_cve(entry)
+                    pbar.update(1)
             print('CVE Entries for year {} updated successfully'.format(year))
