@@ -1,6 +1,3 @@
-from cve_search.capec_updater import CAPECUpdater
-from cve_search.crossref_updater import CrossReferenceUpdater
-from cve_search.cve_updater import CVEUpdater
 from cve_search.driver import MongoDriver
 
 
@@ -9,6 +6,9 @@ class CVESearch:
         self.driver = MongoDriver(server, port)
 
     def update(self, force_update=False):
+        from cve_search.capec_updater import CAPECUpdater
+        from cve_search.crossref_updater import CrossReferenceUpdater
+        from cve_search.cve_updater import CVEUpdater
         capec_updated = CAPECUpdater(driver=self.driver, force_update=force_update).update()
         cve_updated = CVEUpdater(driver=self.driver, force_update=force_update).update()
         cross_updater = CrossReferenceUpdater(driver=self.driver)
