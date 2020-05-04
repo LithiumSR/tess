@@ -19,7 +19,7 @@ class CVEUpdater:
         self.path = join(os.path.dirname(join(os.path.abspath(__file__))), 'data')
         self.last_year = datetime.datetime.now().year
         self.url = 'https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-{0}.{1}'
-        self.starting_year = 2015
+        self.starting_year = 2002
         self.force_update = force_update
         self.driver = driver
         self.scraper = None
@@ -88,9 +88,15 @@ class CVEUpdater:
             with tqdm(desc="Year " + str(year), total=len(cve_entries)) as pbar:
                 for entry in cve_entries:
                     cve_id = entry['cve']['CVE_data_meta']['ID']
-                    if self.scraper is not None:
+                    description = entry['cve']['description']['description_data'][0]['value']
+                    if self.scraper is not None and not description.startswith('** REJECT **'):
                         history = self.scraper.get_history(cve_id)
-                        entry['history'] = history
+                        if history is None:
+                            entry['history'] = {}
+                        else:
+                            entry['history'] = history
+                    else:
+                        entry['history'] = {}
                     self.driver.write_details_cve(entry)
                     pbar.update(1)
             print('CVE Entries for year {} updated successfully'.format(year))
