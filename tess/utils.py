@@ -1,4 +1,4 @@
-import dateparser
+from datetime import datetime
 
 from tess.data.vulnerability import Vulnerability
 
@@ -6,7 +6,7 @@ from tess.data.vulnerability import Vulnerability
 class Utils:
 
     @staticmethod
-    def get_available_feature_schema(data):
+    def get_available_feature_schema(data, force_base_entries=True):
         cwe_entries = []
         capec_entries = []
         keywords_entries = []
@@ -14,7 +14,11 @@ class Utils:
             cwe_entries.extend([item.lower() for item in el.details.cwe])
             capec_entries.extend([item[0].lower() for item in el.details.capec])
             keywords_entries.extend([item.lower() for item in el.details.keywords])
-        return list(set(keywords_entries)) + list(set(capec_entries)) + list(set(cwe_entries)) + ['__cvss_expl', '__ref_number', '__days_diff']
+        if force_base_entries:
+            addon = ['__cvss_expl', '__ref_number', '__days_diff']
+        else:
+            addon = []
+        return list(set(keywords_entries)) + list(set(capec_entries)) + list(set(cwe_entries)) + addon
 
     @staticmethod
     def get_element_feature(schema, vulnerability, time):
@@ -25,9 +29,12 @@ class Utils:
                 features[index] = 1
             except ValueError:
                 pass
-        features[schema.index('__days_diff')] = (time - vulnerability.published_date.replace(tzinfo=None)).days
-        features[schema.index('__ref_number')] = vulnerability.references_number
-        features[schema.index('__cvss_expl')] = vulnerability.e_score
+        try:
+            features[schema.index('__days_diff')] = (time - vulnerability.published_date.replace(tzinfo=None)).days
+            features[schema.index('__ref_number')] = vulnerability.references_number
+            features[schema.index('__cvss_expl')] = vulnerability.e_score
+        except ValueError:
+            pass
         return features
 
     @staticmethod
@@ -53,17 +60,20 @@ class Utils:
         return ret
 
     @staticmethod
-    def get_vulnerability(cve_id, cve_search, key_parser, skip_capec=False, skip_keywords=False, skip_cwe=False):
+    def get_vulnerability(cve_id, cve_search, key_parser, skip_capec=False, skip_keywords=False, skip_cwe=False, _target = None):
         info = cve_search.find_cve_by_id(cve_id)
-        if skip_keywords is None:
+        if skip_keywords:
             keywords = []
         else:
             keywords = key_parser.parse(info['cve']['description']['description_data'][0]['value'])
-        if skip_capec is None:
+        if skip_capec:
             capec = []
         else:
-            capec = [(item['id'], item['name']) for item in info['capec']]
-        if skip_cwe is None:
+            try:
+                capec = [(item['id'], item['name']) for item in info['capec']]
+            except KeyError:
+                capec = []
+        if skip_cwe:
             cwe = []
         else:
             cwe = []
@@ -80,7 +90,7 @@ class Utils:
             return None
         vuln_details = Vulnerability(keywords, capec, cwe, exploitability_score, cvss_vector,
                                      len(info['cve']['references']['reference_data']),
-                                     dateparser.parse(info['publishedDate']))
+                                     datetime.strptime(info['publishedDate'], '%Y-%m-%dT%H:%MZ'), info['history'])
         return vuln_details
 
 
