@@ -21,8 +21,8 @@ class HistoryParser:
         self.min_age = min_age
 
     def load(self):
-        if self.skip_capec is None and self.skip_keywords is None:
-            raise AttributeError("Can't skip both capec entries and keywords!")
+        if self.skip_capec == False and self.skip_keywords == False and self.skip_cwe == False:
+            raise AttributeError("Can't skip capec entries, cwe elements and keywords all together!")
         if self.data is not None:
             return self.data
         self.data = []
@@ -31,10 +31,10 @@ class HistoryParser:
 
         with open(self.data_path, mode='r') as csv_file:
             csv_reader = csv.DictReader(csv_file, delimiter=',')
-            today = datetime.now(timezone.utc)
+            today = datetime.now(tz=None)
             for row in csv_reader:
                 info = cve.find_cve_by_id(row['id'])
-                published = dateparser.parse(info['publishedDate'])
+                published = datetime.strptime(info['publishedDate'], '%Y-%m-%dT%H:%MZ')
                 if (today - published).days < self.min_age:
                     print('Ignoring event for {}'.format(row['id']))
                     continue
@@ -43,8 +43,11 @@ class HistoryParser:
                     if item.id == row['id']:
                         vuln_details = item.details
                 if vuln_details is None:
+                    target = None
+                    if 'target' in row.keys():
+                        target = row['target']
                     vuln_details = Utils.get_vulnerability(row['id'], cve, key_parser, self.skip_capec,
-                                                           self.skip_keywords, self.skip_cwe)
+                                                           self.skip_keywords, self.skip_cwe, _target = target)
                 if vuln_details is None:
                     continue
                 vuln_event = VulnerabilityEvent(row['id'], row['data'], row['outcome'], vuln_details)
