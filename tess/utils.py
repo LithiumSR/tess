@@ -29,12 +29,12 @@ class Utils:
                 features[index] = 1
             except ValueError:
                 pass
-        try:
+        if '__days_diff' in schema:
             features[schema.index('__days_diff')] = (time - vulnerability.published_date.replace(tzinfo=None)).days
+        elif '__ref_number' in schema:
             features[schema.index('__ref_number')] = vulnerability.references_number
+        elif '__cvss_expl' in schema:
             features[schema.index('__cvss_expl')] = vulnerability.e_score
-        except ValueError:
-            pass
         return features
 
     @staticmethod
