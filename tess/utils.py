@@ -40,6 +40,8 @@ class Utils:
     @staticmethod
     def get_target_function_value(data, vuln_event):
         valid_events = []
+        if vuln_event.details.target is not None:
+            return vuln_event.details.target
         for item in data:
             if vuln_event.id != item.id:
                 continue
@@ -60,7 +62,7 @@ class Utils:
         return ret
 
     @staticmethod
-    def get_vulnerability(cve_id, cve_search, key_parser, skip_capec=False, skip_keywords=False, skip_cwe=False, _target = None):
+    def get_vulnerability(cve_id, cve_search, key_parser, skip_capec=False, skip_keywords=False, skip_cwe=False, target = None):
         info = cve_search.find_cve_by_id(cve_id)
         if skip_keywords:
             keywords = []
@@ -90,7 +92,7 @@ class Utils:
             return None
         vuln_details = Vulnerability(keywords, capec, cwe, exploitability_score, cvss_vector,
                                      len(info['cve']['references']['reference_data']),
-                                     datetime.strptime(info['publishedDate'], '%Y-%m-%dT%H:%MZ'), info['history'])
+                                     datetime.strptime(info['publishedDate'], '%Y-%m-%dT%H:%MZ'), info['history'], target=target)
         return vuln_details
 
 

@@ -47,7 +47,7 @@ class HistoryParser:
                     if 'target' in row.keys():
                         target = row['target']
                     vuln_details = Utils.get_vulnerability(row['id'], cve, key_parser, self.skip_capec,
-                                                           self.skip_keywords, self.skip_cwe, _target = target)
+                                                           self.skip_keywords, self.skip_cwe, target=target)
                 if vuln_details is None:
                     continue
                 vuln_event = VulnerabilityEvent(row['id'], row['data'], row['outcome'], vuln_details)
