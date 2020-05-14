@@ -49,6 +49,7 @@ class PerformanceValidator:
     @staticmethod
     def get_perf_model(model, X_test, y_true):
         ret = {}
+        y_true = y_true.astype(np.float)
         y_pred = model.predict(X_test)
         ret['exp_var'] = explained_variance_score(y_true, y_pred)
         ret['max_error'] = max_error(y_true, y_pred)
