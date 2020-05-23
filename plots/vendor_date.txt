@@ -1,0 +1,2 @@
+{'median': 26.0, 'upper_quartile': 52.0, 'lower_quartile': 14.0}
+[array([14.,  8.]), array([ 52., 109.])]
