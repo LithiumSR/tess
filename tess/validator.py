@@ -51,11 +51,32 @@ class PerformanceValidator:
         ret = {}
         y_true = y_true.astype(np.float)
         y_pred = model.predict(X_test)
-        ret['exp_var'] = explained_variance_score(y_true, y_pred)
-        ret['max_error'] = max_error(y_true, y_pred)
-        ret['mean_abs_error'] = mean_absolute_error(y_true, y_pred)
-        ret['mean_squared_error'] = mean_squared_error(y_true, y_pred)
-        ret['mean_squared_log_error'] = mean_squared_log_error(y_true, y_pred)
-        ret['median_abs_error'] = median_absolute_error(y_true, y_pred)
-        ret['r2'] = r2_score(y_true, y_pred)
+        try:
+            ret['exp_var'] = explained_variance_score(y_true, y_pred)
+        except ValueError:
+            print("exp_var error")
+        try:
+            ret['max_error'] = max_error(y_true, y_pred)
+        except ValueError:
+            print("max_error error")
+        try:
+            ret['mean_abs_error'] = mean_absolute_error(y_true, y_pred)
+        except ValueError:
+            print("mean_abs_error error")
+        try:
+            ret['mean_squared_error'] = mean_squared_error(y_true, y_pred)
+        except ValueError:
+            print("mean_squared_error error")
+        try:
+            ret['mean_squared_log_error'] = mean_squared_log_error(y_true, y_pred)
+        except ValueError:
+            print("mean_squared_log_error error")
+        try:
+            ret['median_abs_error'] = median_absolute_error(y_true, y_pred)
+        except ValueError:
+            print("median_abs_error error")
+        try:
+            ret['r2'] = r2_score(y_true, y_pred)
+        except ValueError:
+            print("r2 error")
         return ret
