@@ -26,7 +26,7 @@ class TessNeuralModel:
                 self.model.add(Dense(units=50, activation='relu', input_dim=len(schema)))
             self.model.add(Dense(units=30, activation='relu', kernel_initializer='uniform'))
             self.model.add(Dense(units=1, activation='linear'))
-            opt = RMSprop(learning_rate=0.001, rho=0.9)
+            opt = RMSprop(learning_rate=0.03, rho=0.9)
             self.model.compile(loss='mse', optimizer=opt)
 
     def learn_by_data(self):
