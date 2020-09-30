@@ -90,9 +90,9 @@ def makeDataset(case):
                         if entry['action'].lower() == 'changed' and cvss_type in entry['type'].lower():
                             if 'v3' in case:
                                 score_old = None
-                                score_new = calculate_vector(cleanup_vector(entry['new'], entry['type']))[3]
+                                score_new = calculate_vector(cleanup_vector(entry['new'], entry['type']))[1]
                                 if entry['old'] != '':
-                                    score_old = calculate_vector(cleanup_vector(entry['old'], entry['type']))[3]
+                                    score_old = calculate_vector(cleanup_vector(entry['old'], entry['type']))[1]
                             else:
                                 print("no")
                                 score_old = None
@@ -123,7 +123,7 @@ def makeDataset(case):
                         min_score = min_score[1]
                     if min_score is not None and max_score is not None:
                         target = min_score - max_score
-                        valid = target >= 0
+                        valid = target <= 0
                 if 'date' in case:
                     min_valid_cvss = None
                     min_cvss = None
@@ -168,10 +168,10 @@ def makeDataset(case):
 
 
 def test(case):
-    parser = HistoryParser(case + '.csv', skip_keywords=False, skip_capec=True, skip_cwe=True)
+    parser = HistoryParser(case + '.csv', skip_keywords=False, skip_capec=False, skip_cwe=False)
     parser.load()
     schema = Utils.get_available_feature_schema(parser.data, force_base_entries=False)
-    # schema = FeatureSelection(parser.data, threshold=8, force_base_entries=False).select()
+    print("o_schema: " + str(len(schema)))
     print("schema: " + str(len(schema)))
     print("nitems: " + str(len(parser.data)))
     print(PerformanceValidator.get_perf(parser.data, schema, selection_method=ValidationMethod.ShuffleSplit, n_splits=3,
@@ -179,5 +179,5 @@ def test(case):
 
 
 if __name__ == "__main__":
-    # makeDataset('cvss v3 score')
-    test('cvss v3 score')
+    makeDataset('cvss v3')
+    test('cvss v3')

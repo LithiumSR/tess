@@ -4,13 +4,11 @@ import functools
 import dateparser
 import matplotlib.pyplot as plt
 import numpy as np
-from sklearn.cluster import DBSCAN
 
 from cve_search.api import CVESearch
 from cvsslib import calculate_vector
 from cvsslib.vector import VectorError
 from proof import cleanup_vector
-from leven import levenshtein
 
 
 def compare(item1, item2):
@@ -194,7 +192,7 @@ def main():
         if new_word in entries.keys():
             entries[new_word] += 1
         else:
-            entries[new_word] = 0
+            entries[new_word] = 1
     print(entries)
     print("----------------------")
     after_seven2 = get_data_processed(2016, 2019, only_nvd=False)
