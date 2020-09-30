@@ -21,7 +21,7 @@ class HistoryParser:
         self.min_age = min_age
 
     def load(self):
-        if self.skip_capec == False and self.skip_keywords == False and self.skip_cwe == False:
+        if self.skip_capec == True and self.skip_keywords == True and self.skip_cwe == True:
             raise AttributeError("Can't skip capec entries, cwe elements and keywords all together!")
         if self.data is not None:
             return self.data
