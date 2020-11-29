@@ -1,2 +1,0 @@
-{'median': 81.0, 'upper_quartile': 493.0, 'lower_quartile': 3.0}
-[array([3., 0.]), array([ 493., 1184.])]
